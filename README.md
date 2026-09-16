@@ -34,7 +34,7 @@ Recommended:
 - `qb-inventory` or `ox_inventory` for property stashes
 - `qb-garages` for house garages
 - `qb-target` or `ox_target` for third-eye interaction
-- `illenium-appearance`, `qb-clothing`, or `fivem-appearance` for wardrobes
+- `qs-appearance` (Quasar), `illenium-appearance`, `qb-clothing`, or `fivem-appearance` for wardrobes
 
 Shell previews fail safely when `screenshot-basic` is unavailable; property management remains usable.
 

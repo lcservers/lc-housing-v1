@@ -3,7 +3,7 @@ game 'gta5'
 
 author 'LC'
 description 'LC Housing - standalone property, interior, door, and furniture management for QBCore and QBox'
-version '1.4.3'
+version '1.4.4'
 license 'GPL-3.0-only'
 
 ui_page 'html/index.html'

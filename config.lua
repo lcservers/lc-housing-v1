@@ -4,7 +4,7 @@
 
 Config = Config or {}
 
-Config.Version = '1.4.3'
+Config.Version = '1.4.4'
 
 -- Development tools. Keep disabled on production servers.
 Config.Debug = true
@@ -194,7 +194,7 @@ Config.Inventory = {
 -- Clothing/appearance provider order for wardrobe access.
 -- The first supported resource in this list that is running will be used.
 Config.Clothing = {
-    resources = { 'illenium-appearance', 'qb-clothing', 'fivem-appearance' } -- checked in this order
+    resources = { 'qs-appearance', 'illenium-appearance', 'qb-clothing', 'fivem-appearance' } -- checked in this order
 }
 
 -- Interior defaults.

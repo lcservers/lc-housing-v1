@@ -1063,7 +1063,11 @@ end
 local function openWardrobe()
     for _, resource in ipairs((Config.Clothing and Config.Clothing.resources) or {}) do
         if GetResourceState(resource) == 'started' then
-            if resource == 'illenium-appearance' then
+            if resource == 'qs-appearance' then
+                -- Quasar Appearance keeps the qb-clothing compatibility event.
+                TriggerEvent('qb-clothing:client:openMenu')
+                return
+            elseif resource == 'illenium-appearance' then
                 TriggerEvent('illenium-appearance:client:openOutfitMenu')
                 return
             elseif resource == 'qb-clothing' then
