@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LC Housing V2</title>
+    <link rel="stylesheet" href="style.css?v=lc-decoration-studio-5">
+    <style>.systemCard,.onlineDot,#sidebarCount{display:none!important}</style>
+</head>
+<body>
+    <main id="app" class="hidden">
+        <section id="adminShell" class="shell dashboardShell">
+
+            <section class="dashboardMain">
+                <header class="dashboardTopbar">
+                    <div class="breadcrumbs">Dashboard / <strong>Properties</strong></div>
+                    <div class="topSearch">
+                        <input id="search" type="text" placeholder="Search properties, players...">
+                    </div>
+                    <button id="refreshBtn" type="button" title="Refresh houses">Refresh</button>
+                    <button id="closeBtn" class="iconButton" type="button" title="Close">X</button>
+                </header>
+
+                <section class="heroRow">
+                    <div>
+                        <h2>Welcome back, Admin User!</h2>
+                        <p>Here's what's happening with your real estate business.</p>
+                    </div>
+                    <div class="heroActions">
+                        <button id="dashboardNewBtn" class="primary" type="button">Create Property</button>
+                        <button id="dashboardRefreshBtn" type="button">Refresh</button>
+                    </div>
+                </section>
+
+                <section class="statsGrid">
+                    <article><span>Total Properties</span><strong id="totalCount">0</strong><small>All properties</small></article>
+                    <article><span>For Sale</span><strong id="saleCount">0</strong><small>Listed for sale</small></article>
+                    <article><span>Owned</span><strong id="ownedCount">0</strong><small>Owned by players</small></article>
+                    <article><span>Total Sales Value</span><strong id="totalSales">$0</strong><small>Owned property value</small></article>
+                </section>
+
+                <section class="contentGrid">
+                    <section class="propertiesPanel">
+                        <div class="panelHeader">
+                            <div>
+                                <h3>Properties</h3>
+                                <p id="mapCount">0 visible</p>
+                            </div>
+                            <div class="filterRow">
+                                <select id="statusFilter">
+                                    <option value="all">All Status</option>
+                                    <option value="listed">For Sale</option>
+                                    <option value="owned">Owned</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="tableWrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Property</th>
+                                        <th>Location</th>
+                                        <th>Type</th>
+                                        <th>Price</th>
+                                        <th>Status</th>
+                                        <th>Owner</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="houseList"></tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <aside class="detailsPanel">
+                        <div class="panelHeader compact detailsHeader">
+                            <h3>Property Details</h3>
+                            <div class="detailsHeaderActions">
+                                <button id="waypointBtn" class="iconButton" type="button">WP</button>
+                                <button id="deleteTopBtn" class="danger iconButton" type="button" title="Delete property">Del</button>
+                            </div>
+                        </div>
+
+                        <form id="houseForm">
+                            <input id="name" type="hidden">
+
+                            <label>Address label<input id="label" type="text" maxlength="96" required></label>
+                            <label>House ID<input id="customName" type="text" maxlength="64" placeholder="Auto-generated for new houses"></label>
+
+                            <label>Price<input id="price" type="number" min="0" step="1" required></label>
+                            <input id="tier" type="hidden" value="1">
+                            <section id="shellGroup" class="shellPickerGroup">
+                                <div class="shellPickerHeading">
+                                    <div><strong>Choose shell interior</strong><span>Select a named layout to see its actual in-game interior.</span><span id="interiorLockNote" class="interiorLockNote hiddenGroup">Locked after creation</span></div>
+                                    <span id="shellPreviewStatus" class="shellPreviewStatus">Select a shell</span>
+                                </div>
+                                <input id="shell" type="hidden" value="shell_v16low">
+                                <div id="shellPicker" class="shellPicker" role="radiogroup" aria-label="Shell interior"></div>
+                                <div id="shellPreview" class="shellPreview" aria-live="polite">
+                                    <div class="shellPreviewShade"></div>
+                                    <div class="shellPreviewCopy">
+                                        <span id="shellPreviewTier">Tier 1</span>
+                                        <strong id="shellPreviewName">Compact Apartment</strong>
+                                        <small id="shellPreviewModel">shell_v16low</small>
+                                    </div>
+                                    <div id="shellPreviewLoading" class="shellPreviewLoading hiddenGroup"><i></i><span>Rendering actual interior…</span></div>
+                                </div>
+                            </section>
+
+                            <label>Property type
+                                <select id="propertyType">
+                                    <option value="shell">Shell</option>
+                                    <option value="mlo">MLO</option>
+                                    <option value="ipl">IPL</option>
+                                </select>
+                            </label>
+
+                            <div id="mloGroup" class="typeGroup hiddenGroup">
+                                <label>MLO name or note<input id="mlo" type="text" maxlength="96" placeholder="eclipse_towers_mlo"></label>
+                            </div>
+                            <div id="iplGroup" class="typeGroup hiddenGroup">
+                                <label>IPL name<input id="ipl" type="text" maxlength="96" placeholder="apa_v_mp_h_01_a"></label>
+                            </div>
+
+                            <fieldset class="coordFieldset">
+                                <legend>Entrance</legend>
+                                <div class="quad">
+                                    <input id="x" type="number" step="any" placeholder="X" required>
+                                    <input id="y" type="number" step="any" placeholder="Y" required>
+                                    <input id="z" type="number" step="any" placeholder="Z" required>
+                                    <input id="h" type="number" step="any" placeholder="H">
+                                </div>
+                                <button id="coordsBtn" class="smallButton" type="button">Set Entry</button>
+                            </fieldset>
+
+                            <fieldset>
+                                <legend>Property Polyzone</legend>
+                                <div class="polyActions">
+                                    <button id="polyBtn" type="button">Draw Zone</button>
+                                    <button id="clearPolyBtn" type="button">Clear</button>
+                                    <span id="polyCount">0 points</span>
+                                </div>
+                            </fieldset>
+
+                            <fieldset id="doorLockFields" class="hiddenGroup">
+                                <legend>Door Locks</legend>
+                                <div class="polyActions">
+                                    <button id="scanDoorsBtn" class="hiddenGroup" type="button">Scan All Doors (Debug)</button>
+                                    <button id="clearDoorsBtn" type="button">Clear</button>
+                                    <span id="doorCount">0 doors</span>
+                                </div>
+                                <div id="adminDoorList" class="doorList"></div>
+                            </fieldset>
+
+                            <input id="image" type="hidden">
+
+                            <label class="check"><input id="garageEnabled" type="checkbox"><span>Enable garage spot</span></label>
+
+                            <fieldset id="garageFields" class="disabled coordFieldset">
+                                <legend>Garage</legend>
+                                <div class="quad">
+                                    <input id="garageX" type="number" step="any" placeholder="X">
+                                    <input id="garageY" type="number" step="any" placeholder="Y">
+                                    <input id="garageZ" type="number" step="any" placeholder="Z">
+                                    <input id="garageW" type="number" step="any" placeholder="W">
+                                </div>
+                                <button id="garageBtn" class="smallButton" type="button">Use Current</button>
+                            </fieldset>
+
+                            <div class="formActions">
+                                <button id="saveBtn" class="primary" type="submit">Create Property</button>
+                                <button id="deleteBtn" class="danger" type="button">Delete</button>
+                            </div>
+                        </form>
+
+                        <div id="message" class="message"></div>
+                        <div id="deleteConfirm" class="confirmRow hiddenGroup">
+                            <span>Delete this property?</span>
+                            <button id="deleteYesBtn" class="danger" type="button">Yes</button>
+                            <button id="deleteNoBtn" type="button">No</button>
+                        </div>
+                    </aside>
+                </section>
+            </section>
+        </section>
+
+        <section id="listingShell" class="shell listingShell hiddenGroup">
+            <header class="topbar">
+                <div>
+                    <h1 id="listingTitle">Property Listing</h1>
+                    <p id="listingSubtitle">Available property details</p>
+                </div>
+                <div class="topActions">
+                    <button id="listingCloseBtn" class="iconButton" type="button" title="Close">X</button>
+                </div>
+            </header>
+
+            <section class="listingView">
+                <aside class="listingDetails">
+                    <div class="listingPrice" id="listingPrice">$0</div>
+                    <div class="listingMeta">
+                        <span id="listingType">SHELL</span>
+                        <span id="listingStatus">Listed</span>
+                    </div>
+                    <dl>
+                        <div><dt>Address</dt><dd id="listingAddress">Unknown</dd></div>
+                        <div><dt>House ID</dt><dd id="listingName">unknown</dd></div>
+                        <div><dt>Tier</dt><dd id="listingTier">1</dd></div>
+                        <div><dt>Door Lock</dt><dd id="listingLock">Unlocked</dd></div>
+                    </dl>
+                    <div id="listingMessage" class="message"></div>
+                    <div id="buyConfirm" class="confirmRow hiddenGroup">
+                        <span>Buy this property?</span>
+                        <button id="buyYesBtn" class="primary" type="button">Yes</button>
+                        <button id="buyNoBtn" type="button">No</button>
+                    </div>
+                    <div id="sellConfirm" class="confirmRow hiddenGroup">
+                        <span>Sell this house?</span>
+                        <button id="sellYesBtn" class="danger" type="button">Yes</button>
+                        <button id="sellNoBtn" type="button">No</button>
+                    </div>
+                    <div id="buyerActions" class="formActions">
+                        <button id="listingWaypointBtn" type="button">Waypoint</button>
+                        <button id="previewBtn" type="button">View Interior</button>
+                        <button id="buyBtn" class="primary" type="button">Buy Property</button>
+                    </div>
+                    <div id="ownerActions" class="ownerActions hiddenGroup">
+                        <div class="ownerContextBar">
+                            <div><span>PROPERTY TYPE</span><strong id="ownerTypeLabel">Shell</strong></div>
+                            <p id="ownerContextNote">Walk to the entrance to enter this property.</p>
+                        </div>
+
+                        <section id="ownerSecurityActions" class="ownerActionGroup">
+                            <div class="ownerActionHeader"><div><strong>Access &amp; security</strong><span>Manage entry locks for this property</span></div><span class="ownerActionBadge">DOORS</span></div>
+                            <div class="ownerActionGrid">
+                                <button id="lockBtn" class="lockButton" type="button">Lock Door</button>
+                                <button id="addDoorBtn" type="button">Add MLO Lock</button>
+                            </div>
+                            <small id="securityHint" class="ownerActionHint"></small>
+                        </section>
+
+                        <section id="ownerInteriorActions" class="ownerActionGroup">
+                            <div class="ownerActionHeader"><div><strong>Interior locations</strong><span>Stand at a location before saving it</span></div><span class="ownerActionBadge">SETUP</span></div>
+                            <div class="ownerActionGrid ownerLocationGrid">
+                                <button id="setExitBtn" class="ownerActionTile" type="button"><span>EXIT</span><strong>Set exit point</strong><small>Use your current position</small></button>
+                                <button id="setStashBtn" class="ownerActionTile" type="button"><span>STORAGE</span><strong>Set stash</strong><small>Use your current position</small></button>
+                                <button id="setWardrobeBtn" class="ownerActionTile" type="button"><span>APPEARANCE</span><strong>Set wardrobe</strong><small>Use your current position</small></button>
+                                <button id="setLogoutBtn" class="ownerActionTile" type="button"><span>SESSION</span><strong>Set logout point</strong><small>Use your current position</small></button>
+                                <button id="decorateBtn" class="ownerActionTile decorateTile" type="button"><span>FURNITURE</span><strong>Decorate house</strong><small>Place and edit furniture</small></button>
+                            </div>
+                            <small id="interiorHint" class="ownerActionHint"></small>
+                        </section>
+
+                        <section id="ownerPropertyActions" class="ownerActionGroup ownerDangerGroup">
+                            <div class="ownerActionHeader"><div><strong>Ownership</strong><span>Permanent property actions</span></div></div>
+                            <button id="sellBtn" class="danger ownerWideButton" type="button">Sell House</button>
+                        </section>
+                    </div>
+                    <section id="ownerDoorSection" class="doorSection hiddenGroup">
+                        <div class="doorSectionHeader"><strong>Saved Doors</strong><span id="ownerDoorCount">0 doors</span></div>
+                        <div id="ownerDoorList" class="doorList"></div>
+                    </section>
+                </aside>
+            </section>
+        </section>
+
+        <section id="furnitureShell" class="qbDecorate hiddenGroup" aria-hidden="true">
+            <aside id="furnitureStudioPanel" class="furnitureStudioPanel">
+                <header class="furnitureStudioHeader">
+                    <div id="furnitureStudioBrand" class="furnitureStudioBrand">
+                        <span>LC</span>
+                        <div><small>PROPERTY TOOLS</small><strong>Interior Studio</strong></div>
+                    </div>
+                    <button id="furnitureCloseBtn" class="furnitureStudioClose" type="button" aria-label="Close decoration menu">×</button>
+                </header>
+
+                <nav id="furnitureWorkspaceTabs" class="furnitureWorkspaceTabs" aria-label="Furniture workspace">
+                    <button id="furnitureObjectsBtn" class="qbDecorateNavButton" type="button"><span>Browse</span><strong>Furniture Shop</strong></button>
+                    <button id="furnitureOwnedBtn" class="qbDecorateNavButton" type="button"><span>Manage</span><strong>My Furniture</strong></button>
+                </nav>
+
+                <nav id="furnitureCategoryBar" class="qbDecorateCategoryBar" aria-label="Furniture categories"></nav>
+                <div id="furnitureItems" class="qbDecorateItems hiddenGroup"></div>
+
+                <section id="furnitureSelectionTray" class="furnitureSelectionTray hiddenGroup" aria-live="polite">
+                    <div class="furnitureSelectionCopy"><small>SELECTED OBJECT</small><strong id="furnitureSelectionName">No object selected</strong><span id="furnitureSelectionPrice">$0</span></div>
+                    <div class="furnitureSelectionActions">
+                        <button id="furnitureCancelBtn" type="button">Cancel</button>
+                        <button id="furniturePlaceBtn" type="button">Place Furniture</button>
+                    </div>
+                </section>
+            </aside>
+
+            <div id="furnitureLoading" class="qbDecorateLoading hiddenGroup"><div class="qbSpinner"><i></i><i></i><i></i><i></i></div></div>
+
+            <div id="furnitureConfirm" class="qbDecorateConfirm hiddenGroup">
+                <small>CONFIRM PURCHASE</small>
+                <p id="furnitureConfirmText">Are you sure you want to purchase this item?</p>
+                <div><button id="furnitureBuyBtn" type="button">Purchase</button><button id="furnitureBuyCancelBtn" type="button">Go Back</button></div>
+            </div>
+
+            <aside class="qbDecorateKeys">
+                <div class="furnitureControlsHeading"><small>PLACEMENT MODE</small><strong>Object controls</strong></div>
+                <div id="furnitureAxisLegend" class="furnitureAxisLegend"><span class="axisX">X</span><span class="axisY">Y</span><span class="axisZ">Z</span><small>Move along each axis</small></div>
+                <dl>
+                    <div><dt>Move object</dt><dd>Arrow Keys</dd></div>
+                    <div><dt>Height</dt><dd>Page Up / Down</dd></div>
+                    <div><dt>Rotate</dt><dd>Shift + Arrows</dd></div>
+                    <div><dt>Place at cursor</dt><dd>Left Alt</dd></div>
+                    <div><dt>Move camera</dt><dd>WASD + Q / E</dd></div>
+                    <div><dt>Look around</dt><dd>Hold Right Click</dd></div>
+                    <div><dt>Save</dt><dd>Enter</dd></div>
+                    <div><dt>Exit studio</dt><dd>Escape</dd></div>
+                </dl>
+            </aside>
+        </section>
+    </main>
+    <script src="app.js?v=lc-shell-preview-7"></script>
+    <script src="furniture.js?v=lc-decoration-studio-3"></script>
+</body>
+</html>
