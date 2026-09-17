@@ -705,6 +705,19 @@ RegisterNetEvent("lc-housing:server:openStash", function(name)
                 end)
                 exports.ox_inventory:forceOpenInventory(src, "stash", stashId)
                 return
+            elseif resource == "qs-inventory" then
+                -- QS Inventory is an inventory script, independent of the framework profile.
+                -- RegisterStash differs between releases, so registration is optional.
+                pcall(function()
+                    exports[resource]:RegisterStash(stashId, slots, weight)
+                end)
+                local opened = pcall(function()
+                    exports[resource]:OpenInventory(src, stashId)
+                end)
+                if not opened then
+                    notify(src, "Your qs-inventory version does not expose OpenInventory(source, stash).", "error")
+                end
+                return
             end
         end
     end

@@ -4,7 +4,7 @@
 
 Config = Config or {}
 
-Config.Version = '1.4.4'
+Config.Version = '1.4.6'
 
 -- Development tools. Keep disabled on production servers.
 Config.Debug = true
@@ -186,7 +186,7 @@ Config.Blips = {
 -- Inventory provider order for house stashes.
 -- The first supported resource in this list that is running will be used.
 Config.Inventory = {
-    resources = { 'qb-inventory', 'ox_inventory' }, -- checked in this order
+    resources = { 'qs-inventory', 'qb-inventory', 'ox_inventory' },
     stashSlots = 80, -- number of slots in each house stash
     stashWeight = 4000000 -- max stash weight
 }
@@ -194,7 +194,7 @@ Config.Inventory = {
 -- Clothing/appearance provider order for wardrobe access.
 -- The first supported resource in this list that is running will be used.
 Config.Clothing = {
-    resources = { 'qs-appearance', 'illenium-appearance', 'qb-clothing', 'fivem-appearance' } -- checked in this order
+    resources = { 'qs-appearance', 'illenium-appearance', 'qb-clothing', 'fivem-appearance' }
 }
 
 -- Interior defaults.
@@ -237,35 +237,35 @@ Config.Shells = {
         model = 'shell_v16low',
         label = 'Compact Apartment',
         description = 'Simple starter layout',
-        entry = { x = 4.693, y = -6.015, z = 1.11, h = 358.634 },
+        entry = { x = 4.750, y = -6.534, z = -1.654, h = 0.020 },
         preview = { camera = { 4.693, -5.550, 2.550 }, target = { 4.650, 0.250, 1.650 }, fov = 76.0 }
     },
     {
         model = 'shell_v16mid',
         label = 'Standard Apartment',
         description = 'Larger residential layout',
-        entry = { x = 1.561, y = -14.305, z = 1.147, h = 2.263 },
+        entry = { x = 1.533, y = -14.345, z = -0.493, h = 2.916 },
         preview = { camera = { 1.561, -13.850, 2.600 }, target = { 1.500, -7.750, 1.600 }, fov = 76.0 }
     },
     {
         model = 'shell_trevor',
         label = 'Rustic House',
         description = 'Worn character interior',
-        entry = { x = 0.374, y = -3.789, z = 2.428, h = 358.633 },
+        entry = { x = 0.189, y = -3.790, z = -0.408, h = 0.395 },
         preview = { camera = { 0.374, -3.350, 3.800 }, target = { 0.350, 1.500, 2.550 }, fov = 76.0 }
     },
     {
         model = 'shell_frankaunt',
         label = 'Family Home',
         description = 'Traditional family layout',
-        entry = { x = -0.36, y = -5.89, z = 1.70, h = 358.21 },
+        entry = { x = -0.199, y = -6.001, z = -0.570, h = 359.740 },
         preview = { camera = { -0.360, -5.450, 3.150 }, target = { -0.350, 0.250, 1.750 }, fov = 76.0 }
     },
     {
         model = 'shell_lester',
         label = 'Industrial Loft',
         description = 'Workshop-style interior',
-        entry = { x = -1.780, y = -0.795, z = 1.10, h = 270.30 },
+        entry = { x = -1.572, y = -6.001, z = -0.370, h = 359.180 },
         preview = { camera = { 2.500, -3.600, 1.600 }, target = { -1.500, -0.800, 1.350 }, fov = 62.0 }
     }
 }

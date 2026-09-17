@@ -246,6 +246,16 @@ local function housePropertyType(house)
     return 'shell'
 end
 
+-- The shell catalogue's `entry` is the interior doorway position relative to
+-- the shell origin. Keep all interior interactions on this same calculated
+-- point instead of falling back to Config.Interior.defaultExit.
+local function shellExitPointForHouse(house)
+    if not house or housePropertyType(house) ~= 'shell' then return nil end
+    local definition = configuredShell(shellModelName(house.shell or ''))
+    if not definition then return nil end
+    return shellInteriorExit(definition, shellInstanceOrigin(house))
+end
+
 local function drawText(text)
     SetTextFont(4)
     SetTextScale(0.35, 0.35)
@@ -1329,6 +1339,35 @@ local function enterOwnedShellHouse(house)
     end, house.name)
 end
 
+local function previewShellHouse(house)
+    if not house or house.owned or house.isOwner then return end
+    if housePropertyType(house) ~= 'shell' then
+        openListing(house)
+        return
+    end
+
+    triggerCallback('lc-housing:server:previewHouse', function(result)
+        if not result or not result.ok then
+            notify(result and result.message or 'Could not preview property.', 'error')
+            return
+        end
+
+        local spawned, spawnError = spawnActiveShell(result.house)
+        if not spawned then
+            notify(spawnError or 'Could not load the property preview.', 'error')
+            return
+        end
+
+        insideHouse = result.house
+        outsideCoords = result.house and result.house.coords and result.house.coords.enter or nil
+        panelOpen = false
+        SetNuiFocus(false, false)
+        SendNUIMessage({ action = 'close' })
+        teleportTo(activeShellExit or result.exit)
+        rebuildTargetZones()
+    end, house.name)
+end
+
 local function clearTargetZones()
     for name, zone in pairs(targetZones) do
         if zone.resource == 'qb-target' then
@@ -1354,8 +1393,14 @@ local function addQbTargetZone(resource, house, enter)
         }
     elseif not house.owned then
         options[#options + 1] = {
-            icon = target.icon or 'fas fa-house',
-            label = targetLabel(house),
+            icon = 'fas fa-eye',
+            label = housePropertyType(house) == 'shell' and 'View Property' or 'View Listing',
+            action = function() if not panelOpen then previewShellHouse(house) end end,
+            canInteract = function() return not panelOpen and not insideHouse end
+        }
+        options[#options + 1] = {
+            icon = 'fas fa-cart-shopping',
+            label = 'Buy Property',
             action = function() if not panelOpen then openListing(house) end end,
             canInteract = function() return not panelOpen and not insideHouse end
         }
@@ -1398,7 +1443,13 @@ local function addOxTargetZone(resource, house, enter)
         }
     elseif not house.owned then
         options[#options + 1] = {
-            name = zoneName .. '_view', icon = target.icon or 'fas fa-house', label = targetLabel(house),
+            name = zoneName .. '_view', icon = 'fas fa-eye', label = housePropertyType(house) == 'shell' and 'View Property' or 'View Listing',
+            distance = Config.Interaction.promptDistance or 2.0,
+            onSelect = function() if not panelOpen then previewShellHouse(house) end end,
+            canInteract = function() return not panelOpen and not insideHouse end
+        }
+        options[#options + 1] = {
+            name = zoneName .. '_buy', icon = 'fas fa-cart-shopping', label = 'Buy Property',
             distance = Config.Interaction.promptDistance or 2.0,
             onSelect = function() if not panelOpen then openListing(house) end end,
             canInteract = function() return not panelOpen and not insideHouse end
@@ -1448,7 +1499,8 @@ local function addInteriorTargetZones(resource, house)
         { type = 'logout', point = settings.logout, label = 'Logout Character', icon = 'fas fa-right-from-bracket' }
     }
     if propertyType == 'shell' and insideHouse and insideHouse.name == house.name then
-        table.insert(points, 1, { type = 'exit', point = settings.exit or Config.Interior.defaultExit, label = 'Exit Property', icon = 'fas fa-door-open' })
+        local shellExit = shellExitPointForHouse(house)
+        table.insert(points, 1, { type = 'exit', point = shellExit or settings.exit or Config.Interior.defaultExit, label = 'Exit Property', icon = 'fas fa-door-open' })
     end
 
     for _, item in ipairs(points) do
@@ -1498,8 +1550,8 @@ rebuildTargetZones = function()
             end
         end
 
-        if house.isOwner then
-            local propertyType = housePropertyType(house)
+        local propertyType = housePropertyType(house)
+        if house.isOwner or (insideHouse and insideHouse.name == house.name and propertyType == 'shell') then
             if propertyType ~= 'shell' or (insideHouse and insideHouse.name == house.name) then
                 addInteriorTargetZones(resource, house)
             end
@@ -1617,6 +1669,31 @@ end
 RegisterCommand(Config.Command, openPanel, false)
 RegisterCommand(Config.CreateCommand, openPanel, false)
 RegisterCommand(Config.OwnerCommand, openOwnerMenu, false)
+
+-- Developer helper: stand at the shell's actual interior doorway and run
+-- /shellcoords. The printed entry table can be copied into Config.Shells.
+RegisterCommand('shellcoords', function()
+    if not insideHouse or housePropertyType(insideHouse) ~= 'shell' then
+        notify('You must be inside a spawned shell to measure its entry/exit point.', 'error')
+        return
+    end
+
+    local origin = shellInstanceOrigin(insideHouse)
+    local coords = GetEntityCoords(PlayerPedId())
+    local heading = GetEntityHeading(PlayerPedId())
+    local relative = {
+        x = coords.x - origin.x,
+        y = coords.y - origin.y,
+        z = coords.z - origin.z,
+        h = heading
+    }
+    local message = ('Shell %s entry = { x = %.3f, y = %.3f, z = %.3f, h = %.3f }'):format(
+        tostring(insideHouse.shell or 'unknown'), relative.x, relative.y, relative.z, relative.h
+    )
+    print('[lc-housing] ' .. message)
+    notify('Shell coordinates printed to the client console (F8).', 'success')
+end, false)
+
 RegisterNetEvent('lc-housing:client:open', openPanel)
 
 RegisterNetEvent('lc-housing:client:setHouses', function(nextHouses)
@@ -2018,12 +2095,19 @@ end)
 RegisterNUICallback('previewHouse', function(data, cb)
     triggerCallback('lc-housing:server:previewHouse', function(result)
         if result and result.ok then
+            local spawned, spawnError = spawnActiveShell(result.house)
+            if not spawned then
+                cb({ ok = false, message = spawnError or 'Could not load the property preview.' })
+                notify(spawnError or 'Could not load the property preview.', 'error')
+                return
+            end
             insideHouse = result.house
             outsideCoords = result.house and result.house.coords and result.house.coords.enter or nil
             panelOpen = false
             SetNuiFocus(false, false)
             SendNUIMessage({ action = 'close' })
             teleportTo(activeShellExit or result.exit)
+            rebuildTargetZones()
         end
         cb(result or { ok = false, message = 'No response from server.' })
     end, data and data.name)
